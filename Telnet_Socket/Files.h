@@ -7,7 +7,7 @@
 
 using namespace std;
 
-string CurrentDateTime() {
+string CurrentDate() {
 	time_t rawtime;
 	struct tm* timeinfo;
 	char buffer[80];
@@ -21,11 +21,25 @@ string CurrentDateTime() {
 	return str;
 }
 
+string CurrentDateTime() {
+	time_t rawtime;
+	struct tm* timeinfo;
+	char buffer[80];
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+
+	strftime(buffer, sizeof(buffer), "DATE_%d-%m-%Y.TIME_%H-%M", timeinfo);
+	std::string str(buffer);
+
+	return str;
+}
+
+
 
 void saveToFile(string data, string ip)
 {
-	//cout << data << endl;
-	string folderName = CurrentDateTime();
+	string folderName = CurrentDate();
 	_mkdir(folderName.c_str());
 	ofstream file_;
 	file_.open(folderName + "/" + ip + ".txt");
@@ -50,16 +64,29 @@ vector<string> readFromFile(string fileName)
 		cout << "File not exist" << "\n" << endl;
 	}
 	else {
-		
 		string row;
-		while (1) {
-			file >> row;
-			if (file.eof())
-				break;
+		// Get line from files and store each line in the vector variable
+		while (getline(file, row)) {
 			list.push_back(row);
 		}
 		cout << fileName << " has been loaded" << "\n" << endl;
 		file.close();
 	}
 	return list;
+}
+
+void LogFailed(string ip)
+{
+	string folderName = CurrentDate();
+	//string filename = CurrentDateTime();
+	string filename = folderName;
+	_mkdir(folderName.c_str());
+
+	fstream file_;
+	file_.open(folderName + "\\log_" + filename + ".txt", fstream::app);
+	file_ << ip << endl;
+	file_.close();
+
+	cout << "Failed to connect to " << ip << " logged in the file:" << "log_" + filename + ".txt" << "\n " << endl;
+
 }

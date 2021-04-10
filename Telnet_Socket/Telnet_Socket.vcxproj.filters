@@ -20,10 +20,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="saveFile.h">
+    <ClInclude Include="Telnet.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Telnet.h">
+    <ClInclude Include="Files.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

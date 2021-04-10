@@ -2,46 +2,66 @@
 #include <WS2tcpip.h>
 #include <string>
 #include <vector>
-#include "saveFile.h"
+#include "Files.h"
 #pragma comment(lib, "ws2_32.lib")
 
 using namespace std;
 
-int Reciver(SOCKET sock, string ip, bool save)
+int Reciver(SOCKET sock, string ip, bool save, int _bufSize)
 {
+	//char* buf = new char[_bufSize];
 	char buf[4096];
-
 	string data;
+	bool startStore = false;
+	int bytesReceived = 0;
+
 	while (sock != INVALID_SOCKET) {
-		int bytesReceived;
-		ZeroMemory(buf, 4096);
-		bytesReceived = recv(sock, buf, 4096, 0);
+		// recive data
+		bytesReceived = recv(sock, buf, sizeof(buf), 0);
+
+		// handle errors
 		if (bytesReceived == -1) {
 			save = false;
 			return 0;
 		}
-		data = string(buf, 0, bytesReceived);
-		if (save == true) {
-			saveToFile(data,ip);
-			save = false;
-			break;
+
+		// bytes to string as long as the switch does not start to send running config
+		if (!startStore) {
+			data = string(buf, 0, bytesReceived);
 		}
 
-		if (data.find("Building configuration...") != string::npos) {
-			save = true;
+		// start the saving actions when switch try to send running config
+		if (data.find("Building configuration...\r\n") != string::npos){
+			data = "";
+			startStore = true;
+		}
+
+		// start when switch sebd the all running config
+		if (startStore) {
+			// store the running config
+			data += string(buf, 0, bytesReceived);
+			if (save == true) {
+				bytesReceived = 0;
+				saveToFile(data, ip); // store running to file
+				save = false;
+				break;
+			}
+			// when to stop storing and allow saving the running config to file
+			if (data.find("!\r\n!\r\nend\r\n") != string::npos) {
+				save = true;
+			}
 		}
 
 	}
 	return 1;
 }
 
-
 int Telnet(string RemoteHost, string username, string password, vector<string> commands)
 {
 	Sleep(10);
-	cout << "Connecting to " << RemoteHost << " \n" << endl;
+	cout << "Connecting to " << RemoteHost << " \r\n" << endl;
 
-	char buf[4096];
+	int  bufSize = 4096; // the buffer size (for dynamic range)
 	bool save = false;
 
 	string TargetIP = RemoteHost;		// The remote device you want to connect
@@ -52,7 +72,8 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 	int wsResult = WSAStartup(ver, &data);
 	if (wsResult != 0)
 	{
-		cerr << "Can't start Winsock, Err #" << wsResult << endl;
+		cerr << "Can't start Winsock, Err #" << wsResult << "\n" << endl;
+
 		return 0;
 	}
 
@@ -61,7 +82,7 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == INVALID_SOCKET)
 	{
-		cerr << "Can't create socket, Err #" << WSAGetLastError() << endl;
+		cerr << "Can't create socket, Err #" << WSAGetLastError() << "\n" << endl;
 		WSACleanup();
 		return 0;
 	}
@@ -75,7 +96,8 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 	int connResult = connect(sock, (sockaddr*)&hint, sizeof(hint));
 	if (connResult == SOCKET_ERROR)
 	{
-		cerr << "Failed to connect to " << TargetIP << " Error: " << WSAGetLastError() << endl;
+		//cerr << "Failed to connect to " << TargetIP << " Error: " << WSAGetLastError() << endl;
+		LogFailed(TargetIP);
 		closesocket(sock);
 		WSACleanup();
 		return 0;
@@ -106,7 +128,7 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 		if (sendResult != -1) {
 			if (commands[i] == "sh run \n")
 			{
-				if (Reciver(sock, TargetIP, save) == 0) {
+				if (Reciver(sock, TargetIP, save, bufSize) == 0) {
 					return 0;
 				}
 			}
@@ -121,5 +143,4 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 	WSACleanup();
 
 	return 1;
-
 }
