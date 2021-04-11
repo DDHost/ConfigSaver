@@ -1,0 +1,88 @@
+
+Current configuration : 1035 bytes
+!
+version 12.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+aaa new-model
+!
+!
+aaa authentication login default local
+aaa authorization exec default local 
+!
+!
+aaa session-id common
+no ip icmp rate-limit unreachable
+ip cef
+!
+!
+!
+!
+no ip domain lookup
+login on-failure log
+login on-success log
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+username root privilege 15 password 0 toor
+archive
+ log config
+  hidekeys
+! 
+!
+!
+!
+ip tcp synwait-time 5
+!
+!
+!
+interface Ethernet0/0
+ ip address 192.168.48.22 255.255.255.0
+ full-duplex
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+no cdp log mismatch duplex
+!
+!
+!
+!
+control-plane
+!
+!
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line vty 0 4
+ privilege level 15
+ transport input telnet
+line vty 5 15
+ privilege level 15
+ transport input telnet
+!
+!
+end
+
+R1#^@

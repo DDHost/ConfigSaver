@@ -56,6 +56,94 @@ int Reciver(SOCKET sock, string ip, bool save, int _bufSize)
 	return 1;
 }
 
+int reciveUntil(SOCKET sock, string para, bool print)
+{
+	int bytesReceived;
+	string data;
+	char buf[4096];
+	
+	while (1)
+	{
+		data = "";
+		bytesReceived = recv(sock, buf, sizeof(buf), 0);
+		if (bytesReceived)
+		{
+			data = string(buf, 0, bytesReceived);
+			if (print)
+			{
+				cout << data << endl;
+			}
+			if (data.find("% Authentication failed\r\n") != string::npos)
+			{
+				return 0;
+			}
+			if (data.find(para) != string::npos)
+			{
+				break;
+			}
+		}
+		
+	}
+	return 1;
+}
+
+void recive(SOCKET sock, bool print)
+{
+
+	int bytesReceived;
+	string data;
+	char buf[4096];
+
+	while (1) 
+	{
+		if (bytesReceived = recv(sock, buf, sizeof(buf), 0)) 
+		{
+			data = string(buf, 0, bytesReceived);
+			if (print) 
+			{
+				cout << data << endl;
+			}
+			break;
+		}
+			
+	}
+}
+
+int Login(SOCKET sock, string user, string pass)
+{
+
+	int bytesReceived;
+	string data;
+	char buf[4096];
+
+	recive(sock, false);
+
+	if(reciveUntil(sock, "Username: ", true))
+	{
+		send(sock, user.c_str(), user.size() + 1, 0);
+	}
+	else
+	{
+		return 0;
+	}
+
+	if (reciveUntil(sock, "Password: ", true))
+	{
+		send(sock, pass.c_str(), pass.size() + 1, 0);
+	}
+	else 
+	{
+		return 0;
+	}
+
+	if (reciveUntil(sock, "\r\n\r\n", true))
+	{
+		return 1;
+	}
+	return 0;
+	
+}
+
 int Telnet(string RemoteHost, string username, string password, vector<string> commands)
 {
 	Sleep(10);
@@ -104,24 +192,23 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 	}
 
 
-	int sendResult;
-
+	int sendResult, LoginAttempt = 0;
 	// login
-
-	sendResult = send(sock, username.c_str(), username.size() + 1, 0);
-	if (sendResult == -1)
+	while (1) 
 	{
-		return 0;
-	}
-	
-	sendResult = send(sock, password.c_str(), password.size() + 1, 0);
-	if (sendResult == -1)
-	{
-		return 0;
+		if (Login(sock, username, password))
+		{
+			cout << "logged in" << "\n" << endl;
+			break;
+		}
+		else 
+		{
+			LogFailed(TargetIP);
+			closesocket(sock);
+			return 0;
+		}
 	}
 
-	// need to add login verfiction 
-	
 	for (int i = 0; i < commands.size(); i++)
 	{
 		sendResult = send(sock, commands[i].c_str(), commands[i].size() + 1, 0);
@@ -144,3 +231,4 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 
 	return 1;
 }
+
