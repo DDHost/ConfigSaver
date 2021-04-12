@@ -90,3 +90,14 @@ void LogFailed(string ip)
 	cout << "Failed to connect to " << ip << " logged in the file:" << "log_" + filename + ".txt" << "\n " << endl;
 
 }
+
+void iniFile() 
+{
+	string fileName = "settings.ini";
+	fstream file;
+	file.open(fileName, ios::in);
+	if (!file) {
+		cout << "1" << endl;
+		WritePrivateProfileStringW(NULL, NULL, NULL, L"appname.ini");
+	} 
+}

@@ -77,6 +77,7 @@ int reciveUntil(SOCKET sock, string para, bool print)
 			{
 				return 0;
 			}
+
 			if (data.find(para) != string::npos)
 			{
 				break;
@@ -118,7 +119,7 @@ int Login(SOCKET sock, string user, string pass)
 
 	recive(sock, false);
 
-	if(reciveUntil(sock, "Username: ", true))
+	if(reciveUntil(sock, "Username: ", false))
 	{
 		send(sock, user.c_str(), user.size() + 1, 0);
 	}
@@ -127,7 +128,7 @@ int Login(SOCKET sock, string user, string pass)
 		return 0;
 	}
 
-	if (reciveUntil(sock, "Password: ", true))
+	if (reciveUntil(sock, "Password: ", false))
 	{
 		send(sock, pass.c_str(), pass.size() + 1, 0);
 	}
@@ -136,7 +137,7 @@ int Login(SOCKET sock, string user, string pass)
 		return 0;
 	}
 
-	if (reciveUntil(sock, "\r\n\r\n", true))
+	if (reciveUntil(sock, "#", false))
 	{
 		return 1;
 	}
@@ -198,7 +199,7 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 	{
 		if (Login(sock, username, password))
 		{
-			cout << "logged in" << "\n" << endl;
+			cout << "Successfully logged into " << "'" << TargetIP << "'" << "\n" << endl;
 			break;
 		}
 		else 
