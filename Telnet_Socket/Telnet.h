@@ -7,7 +7,7 @@
 
 using namespace std;
 
-int Reciver(SOCKET sock, string ip, bool save, int _bufSize)
+int Reciver(SOCKET sock, string ip, bool save, int _bufSize, int num)
 {
 	//char* buf = new char[_bufSize];
 	char buf[4096];
@@ -16,6 +16,7 @@ int Reciver(SOCKET sock, string ip, bool save, int _bufSize)
 	int bytesReceived = 0;
 
 	while (sock != INVALID_SOCKET) {
+
 		// recive data
 		bytesReceived = recv(sock, buf, sizeof(buf), 0);
 
@@ -35,7 +36,6 @@ int Reciver(SOCKET sock, string ip, bool save, int _bufSize)
 			data = "";
 			startStore = true;
 		}
-
 		// start when switch sebd the all running config
 		if (startStore) {
 			// store the running config
@@ -47,7 +47,7 @@ int Reciver(SOCKET sock, string ip, bool save, int _bufSize)
 				break;
 			}
 			// when to stop storing and allow saving the running config to file
-			if (data.find("!\r\n!\r\nend\r\n") != string::npos) {
+			if (data.find("!\r\nend\r\n") != string::npos && data.find("^@") != string::npos) {
 				save = true;
 			}
 		}
@@ -145,10 +145,11 @@ int Login(SOCKET sock, string user, string pass)
 	
 }
 
-int Telnet(string RemoteHost, string username, string password, vector<string> commands)
+int Telnet(string RemoteHost, string username, string password, vector<string> commands, int num)
 {
+
 	Sleep(10);
-	cout << "Connecting to " << RemoteHost << " \r\n" << endl;
+	cout << "Connecting to " << RemoteHost << "\n" << endl;
 
 	int  bufSize = 4096; // the buffer size (for dynamic range)
 	bool save = false;
@@ -199,7 +200,7 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 	{
 		if (Login(sock, username, password))
 		{
-			cout << "Successfully logged into " << "'" << TargetIP << "'" << "\n" << endl;
+			cout << "Successfully logged into " << "'" << TargetIP << "'" << "\n " << endl;
 			break;
 		}
 		else 
@@ -216,7 +217,7 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 		if (sendResult != -1) {
 			if (commands[i] == "sh run \n")
 			{
-				if (Reciver(sock, TargetIP, save, bufSize) == 0) {
+				if (Reciver(sock, TargetIP, save, bufSize, num) == 0) {
 					return 0;
 				}
 			}
@@ -229,7 +230,6 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 
 	closesocket(sock);
 	WSACleanup();
-
 	return 1;
 }
 
