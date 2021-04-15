@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Headers">
+      <UniqueIdentifier>{581562ee-5397-441a-bcef-427136559acd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Headers\sockets">
+      <UniqueIdentifier>{118fc61b-01df-4085-9f97-1379d9e6e4c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Headers\files">
+      <UniqueIdentifier>{40c1d024-6d81-4f9f-88cf-7a4d6ae0e3c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -20,11 +29,20 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common.h">
+      <Filter>Source Files\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Main.h">
+      <Filter>Source Files\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="Telnet.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Headers\sockets</Filter>
     </ClInclude>
     <ClInclude Include="Files.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Headers\files</Filter>
+    </ClInclude>
+    <ClInclude Include="inifile.h">
+      <Filter>Source Files\Headers\files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

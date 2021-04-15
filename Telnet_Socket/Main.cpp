@@ -1,57 +1,60 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include "Telnet.h"
-#include <thread>
-#include <future>
-#include <typeinfo>
-
-using namespace std;
+#include "Main.h"
 
 int main()
 {
+	settings config = read_INIFile(); // retrive settings from config.ini
+	SetConsoleTitleA("ConfigSaver - by DDHost"); // Set Title to the window
+	Console(config.width, config.height); // Set the window size (disable resize)
+	PrintCenteredText(menu_TITLE,config.width); // Print The Ascii art 'ConfigSaver'
 
-	string username, password;
+	string username, password, yesORno;
 	while (1) 
 	{
 		try 
 		{
-			// get the switches user and password
-			cout << "Enter Username: ";
-			cin >> username;
-			cout << "Enter Password: ";
-			cin >> password;
-			break;
+			Print2Spaces("Use the default login information(yes/y or enter for no): ");
+			cin >> yesORno;
+			transform(yesORno.begin(), yesORno.end(), yesORno.begin(), ::tolower);
+			if (yesORno == "yes" || yesORno == "y") 
+			{
+				username = config.username;
+				password = config.password;
+				break;
+			}
+			else
+			{
+				// get the switches user and password
+				Print2Spaces("Enter Username: ");
+				cin >> username;
+				Print2Spaces("Enter Password: ");
+				cin >> password;
+				break;
+			}
 		}
-		catch (const std::exception& e)
+		catch (const std::exception& err)
 		{
-			cout << "\n" << endl;
-			cout << "Error: " << e.what() << endl;
-			cout << "\n" << endl;
+			PrintError("Error: ", err);
 		}
 
 	}
 
 	vector<string> ips;
-	vector<string> commands;
-	commands.push_back("terminal len 0 \n");
-	commands.push_back("sh run \n");
-
-	string filename, yesORno;
+	string filename;
 	while (1) {
 		try
 		{
-			cout << "Use the default file 'ips.txt' (yes/y or enter for your choice): ";
+			Print2Spaces("Use the default file '"+config.file+"' (yes / y or enter for no): ");
 			cin >> yesORno;
 			transform(yesORno.begin(), yesORno.end(), yesORno.begin(), ::tolower);
 			if (yesORno == "yes" || yesORno == "y") {
-				filename = "ips.txt";
+				filename = config.file;
 				ips = readFromFile(filename);
 				if(ips.size() > 0)
 					break;
 			}
 			else {
-				cout << " \n Enter the file name, if the file exist in different directory write the full file loction";
+				Print("\n");
+				Print2Spaces("Enter the file name, if the file exist in different directory write the full file loction");
 				cin >> filename;
 				if (typeid(filename).name() == "string") {
 					ips = readFromFile(filename);
@@ -60,18 +63,15 @@ int main()
 				}
 			}
 		}
-		catch (const std::exception& e)
+		catch (const std::exception& err)
 		{
-			cout << "\n" << endl;
-			cout << "Error: " << e.what() << endl;
-			cout << "\n" << endl;
+			PrintError("Error: ", err);
 		}
 
 	}
 
 	vector<thread> threads;
-	int maxThreads = 6 , incThread = maxThreads - 1;
-
+	int maxThreads = config.maxThreads, incThread = maxThreads - 1;
 	for (int i = 0; i < ips.size(); i++) {
 		while (1) {
 			try
@@ -80,7 +80,7 @@ int main()
 				{
 					for (int j = i, y = 0; y < (1 + incThread); j++, y++)
 					{
-						threads.push_back(thread(Telnet, ips.at(j), username, password, commands, j));
+						threads.push_back(thread(Telnet, ips.at(j), username, password, config.COMMANDS, j));
 					}
 
 					for (auto& thread : threads)
@@ -99,19 +99,16 @@ int main()
 
 				
 			}
-			catch (const std::exception& e)
+			catch (const std::exception& err)
 			{
-
-				cout << "\n" << endl;
-				cout << "Error: " << e.what() << endl;
-				cout << "\n" << endl;
+				PrintError("Error: ", err);
 			}
 		}
 		threads.clear();
 	}
 
-
-	cout << "FINISHED" << endl;
-	cout << "\n" << endl;
+	Print("\n");
+	Print("FINISHED");
+	Print("\n");
 	system("pause");
 }

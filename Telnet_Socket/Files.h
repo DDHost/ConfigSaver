@@ -1,9 +1,8 @@
-#include <iostream>
-#include <fstream>
-#include <string>
+#include "common.h"
 #include <ctime>
 #include <direct.h>
 #pragma warning(disable : 4996)
+#pragma once
 
 using namespace std;
 
@@ -67,6 +66,7 @@ vector<string> readFromFile(string fileName)
 		string row;
 		// Get line from files and store each line in the vector variable
 		while (getline(file, row)) {
+			row.erase(remove(row.begin(), row.end(), ' '), row.end()); // erease white spaces
 			list.push_back(row);
 		}
 		cout << fileName << " has been loaded" << "\n" << endl;
@@ -91,13 +91,4 @@ void LogFailed(string ip)
 
 }
 
-void iniFile() 
-{
-	string fileName = "settings.ini";
-	fstream file;
-	file.open(fileName, ios::in);
-	if (!file) {
-		cout << "1" << endl;
-		WritePrivateProfileStringW(NULL, NULL, NULL, L"appname.ini");
-	} 
-}
+

@@ -1,8 +1,7 @@
-#include <iostream>
+#include "common.h"
 #include <WS2tcpip.h>
-#include <string>
-#include <vector>
 #include "Files.h"
+#pragma once
 #pragma comment(lib, "ws2_32.lib")
 
 using namespace std;
@@ -62,7 +61,7 @@ int reciveUntil(SOCKET sock, string para, bool print)
 	string data;
 	char buf[4096];
 	
-	while (1)
+	while (sock != INVALID_SOCKET)
 	{
 		data = "";
 		bytesReceived = recv(sock, buf, sizeof(buf), 0);
@@ -95,7 +94,7 @@ void recive(SOCKET sock, bool print)
 	string data;
 	char buf[4096];
 
-	while (1) 
+	while (sock != INVALID_SOCKET)
 	{
 		if (bytesReceived = recv(sock, buf, sizeof(buf), 0)) 
 		{
@@ -147,8 +146,8 @@ int Login(SOCKET sock, string user, string pass)
 
 int Telnet(string RemoteHost, string username, string password, vector<string> commands, int num)
 {
+	Sleep(50);
 
-	Sleep(10);
 	cout << "Connecting to " << RemoteHost << "\n" << endl;
 
 	int  bufSize = 4096; // the buffer size (for dynamic range)
@@ -163,7 +162,6 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 	if (wsResult != 0)
 	{
 		cerr << "Can't start Winsock, Err #" << wsResult << "\n" << endl;
-
 		return 0;
 	}
 
@@ -196,7 +194,7 @@ int Telnet(string RemoteHost, string username, string password, vector<string> c
 
 	int sendResult, LoginAttempt = 0;
 	// login
-	while (1) 
+	while (sock != INVALID_SOCKET)
 	{
 		if (Login(sock, username, password))
 		{
