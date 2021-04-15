@@ -1,6 +1,6 @@
-#include "common.h"
+#include "../common.h"
+#include "../Files/Files.h"
 #include <WS2tcpip.h>
-#include "Files.h"
 #pragma once
 #pragma comment(lib, "ws2_32.lib")
 

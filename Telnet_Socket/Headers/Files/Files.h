@@ -1,4 +1,4 @@
-#include "common.h"
+#include "../common.h"
 #include <ctime>
 #include <direct.h>
 #pragma warning(disable : 4996)

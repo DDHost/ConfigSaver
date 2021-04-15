@@ -1,6 +1,6 @@
 #include "common.h"
-#include "Telnet.h"
-#include "inifile.h"
+#include "Sockets/Telnet.h"
+#include "Files/inifile.h"
 #include <thread>
 #include <future>
 #include <typeinfo>
