@@ -2,8 +2,6 @@
 #include <unordered_map>
 #pragma once
 
-using namespace std;
-
 #ifndef iniFileSettings
 struct settings
 {

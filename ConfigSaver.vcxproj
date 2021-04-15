@@ -142,13 +142,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Main.cpp" />
+    <ClCompile Include="Source\Resources\Classes\Files\Files.cpp" />
+    <ClCompile Include="Source\Resources\Classes\Printers.cpp" />
+    <ClCompile Include="Source\Resources\Classes\Sockets\Telnet.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Headers\common.h" />
-    <ClInclude Include="Source\Headers\Files\Files.h" />
-    <ClInclude Include="Source\Headers\Files\inifile.h" />
-    <ClInclude Include="Source\Headers\Main.h" />
-    <ClInclude Include="Source\Headers\Sockets\Telnet.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Source\Resources\Headers\common.h" />
+    <ClInclude Include="Source\Resources\Headers\Files\Files.h" />
+    <ClInclude Include="Source\Resources\Headers\Files\inifile.h" />
+    <ClInclude Include="Source\Resources\Headers\Main.h" />
+    <ClInclude Include="Source\Resources\Headers\Sockets\Telnet.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ConfigSaver.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

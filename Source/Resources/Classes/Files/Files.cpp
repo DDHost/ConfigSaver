@@ -1,12 +1,8 @@
-#include "../common.h"
-#include <ctime>
-#include <direct.h>
-#pragma warning(disable : 4996)
+#include "../../Headers/Files/Files.h"
 #pragma once
 
-using namespace std;
-
-string CurrentDate() {
+string Files::CurrentDate()
+{
 	time_t rawtime;
 	struct tm* timeinfo;
 	char buffer[80];
@@ -20,7 +16,8 @@ string CurrentDate() {
 	return str;
 }
 
-string CurrentDateTime() {
+string Files::CurrentDateTime()
+{
 	time_t rawtime;
 	struct tm* timeinfo;
 	char buffer[80];
@@ -34,24 +31,22 @@ string CurrentDateTime() {
 	return str;
 }
 
-
-
-void saveToFile(string data, string ip)
+void Files::saveToFile(string data, string ip) 
 {
 	string folderName = CurrentDate();
-	_mkdir(folderName.c_str());
+
+	if (!IsPathExist(folderName))
+		mkdir(folderName.c_str());
 	ofstream file_;
 	file_.open(folderName + "/" + ip + ".txt");
 	file_ << data;
 	file_.close();
 
 	cout << ip << " Saved" << "\n " << endl;
-
 }
 
-vector<string> readFromFile(string fileName)
+vector<string> Files::readFromFile(string fileName)
 {
-
 	cout << "\n Loading file:" << fileName << endl;
 	cout << "\n" << endl;
 
@@ -73,14 +68,18 @@ vector<string> readFromFile(string fileName)
 		file.close();
 	}
 	return list;
+
 }
 
-void LogFailed(string ip)
+void Files::LogFailed(string ip, int num)
 {
+	_sleep(num * 10);
 	string folderName = CurrentDate();
 	//string filename = CurrentDateTime();
 	string filename = folderName;
-	_mkdir(folderName.c_str());
+
+	if(!IsPathExist(folderName))
+		mkdir(folderName.c_str());
 
 	fstream file_;
 	file_.open(folderName + "\\log_" + filename + ".txt", fstream::app);
@@ -88,7 +87,11 @@ void LogFailed(string ip)
 	file_.close();
 
 	cout << "Failed to connect to " << ip << " logged in the file:" << "log_" + filename + ".txt" << "\n " << endl;
-
 }
 
 
+bool Files::IsPathExist(const string& s)
+{
+	struct stat buffer;
+	return (stat(s.c_str(), &buffer) == 0);
+}

@@ -13,36 +13,65 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Headers">
-      <UniqueIdentifier>{eb5fa55c-9596-4c51-8f37-6dde27571959}</UniqueIdentifier>
+    <Filter Include="Source Files\Resources">
+      <UniqueIdentifier>{f8743fa3-7722-46ff-92ed-90f4a92f669b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Headers\Files">
-      <UniqueIdentifier>{45ec4d1b-56c2-4927-8733-e152267b6925}</UniqueIdentifier>
+    <Filter Include="Source Files\Resources\Classes">
+      <UniqueIdentifier>{057c0ff6-e19e-43a1-ad21-897ed2d724de}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Headers\sockets">
-      <UniqueIdentifier>{83057d01-64aa-4680-951c-b0b7fa0cec16}</UniqueIdentifier>
+    <Filter Include="Source Files\Resources\Headers">
+      <UniqueIdentifier>{8817948f-000c-4c5d-8260-591b452d3a08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Resources\Headers\Sockets">
+      <UniqueIdentifier>{2bd6fda9-4b5c-41d4-a737-068369a49a3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Resources\Headers\Files">
+      <UniqueIdentifier>{96577eab-e4a6-43ab-9c83-ec2486470907}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Resources\Classes\Sockets">
+      <UniqueIdentifier>{f7279e6f-91d6-413a-afce-834122eec6fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Resources\Classes\Files">
+      <UniqueIdentifier>{69f1b05f-9b7c-4885-bb32-d0b48cd8532d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Resources\Classes\Printers.cpp">
+      <Filter>Source Files\Resources\Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Resources\Classes\Files\Files.cpp">
+      <Filter>Source Files\Resources\Classes\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Resources\Classes\Sockets\Telnet.cpp">
+      <Filter>Source Files\Resources\Classes\Sockets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Headers\Main.h">
-      <Filter>Source Files\Headers</Filter>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Headers\common.h">
-      <Filter>Source Files\Headers</Filter>
+    <ClInclude Include="Source\Resources\Headers\Files\Files.h">
+      <Filter>Source Files\Resources\Headers\Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Headers\Files\Files.h">
-      <Filter>Source Files\Headers\Files</Filter>
+    <ClInclude Include="Source\Resources\Headers\Files\inifile.h">
+      <Filter>Source Files\Resources\Headers\Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Headers\Files\inifile.h">
-      <Filter>Source Files\Headers\Files</Filter>
+    <ClInclude Include="Source\Resources\Headers\Sockets\Telnet.h">
+      <Filter>Source Files\Resources\Headers\Sockets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Headers\Sockets\Telnet.h">
-      <Filter>Source Files\Headers\sockets</Filter>
+    <ClInclude Include="Source\Resources\Headers\common.h">
+      <Filter>Source Files\Resources\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Resources\Headers\Main.h">
+      <Filter>Source Files\Resources\Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ConfigSaver.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

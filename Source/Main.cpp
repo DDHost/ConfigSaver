@@ -1,18 +1,20 @@
-#include "Headers/Main.h"
+#include "Resources/Headers/Main.h"
+
 
 int main()
 {
 	settings config = read_INIFile(); // retrive settings from config.ini
 	SetConsoleTitleA("ConfigSaver - by DDHost"); // Set Title to the window
-	Console(config.width, config.height); // Set the window size (disable resize)
-	PrintCenteredText(menu_TITLE,config.width); // Print The Ascii art 'ConfigSaver'
+	Main main;
+	main.Console(config.width, config.height); // Set the window size (disable resize)
+	main.printer.PrintCenteredText(main.GETMENUTITLE(),config.width); // Print The Ascii art 'ConfigSaver'
 
 	string username, password, yesORno;
 	while (1) 
 	{
 		try 
 		{
-			Print2Spaces("Use the default login information(yes/y or enter for no): ");
+			main.printer.Print2Spaces("Use the default login information(yes/y or enter for no): ");
 			cin >> yesORno;
 			transform(yesORno.begin(), yesORno.end(), yesORno.begin(), ::tolower);
 			if (yesORno == "yes" || yesORno == "y") 
@@ -24,40 +26,42 @@ int main()
 			else
 			{
 				// get the switches user and password
-				Print2Spaces("Enter Username: ");
+				main.printer.Print2Spaces("Enter Username: ");
 				cin >> username;
-				Print2Spaces("Enter Password: ");
+				main.printer.Print2Spaces("Enter Password: ");
 				cin >> password;
 				break;
 			}
 		}
 		catch (const std::exception& err)
 		{
-			PrintError("Error: ", err);
+			main.printer.PrintError("Error: ", err);
 		}
 
 	}
+
+	Files files;
 
 	vector<string> ips;
 	string filename;
 	while (1) {
 		try
 		{
-			Print2Spaces("Use the default file '"+config.file+"' (yes / y or enter for no): ");
+			main.printer.Print2Spaces("Use the default file '"+config.file+"' (yes / y or enter for no): ");
 			cin >> yesORno;
 			transform(yesORno.begin(), yesORno.end(), yesORno.begin(), ::tolower);
 			if (yesORno == "yes" || yesORno == "y") {
 				filename = config.file;
-				ips = readFromFile(filename);
+				ips = files.readFromFile(filename);
 				if(ips.size() > 0)
 					break;
 			}
 			else {
-				Print("\n");
-				Print2Spaces("Enter the file name, if the file exist in different directory write the full file loction");
+				main.printer.Print("\n");
+				main.printer.Print2Spaces("Enter the file name, if the file exist in different directory write the full file loction");
 				cin >> filename;
 				if (typeid(filename).name() == "string") {
-					ips = readFromFile(filename);
+					ips = files.readFromFile(filename);
 					if (ips.size() > 0)
 						break;
 				}
@@ -65,7 +69,7 @@ int main()
 		}
 		catch (const std::exception& err)
 		{
-			PrintError("Error: ", err);
+			main.printer.PrintError("Error: ", err);
 		}
 
 	}
@@ -78,9 +82,10 @@ int main()
 			{
 				if (i + incThread < ips.size())
 				{
+
 					for (int j = i, y = 0; y < (1 + incThread); j++, y++)
 					{
-						threads.push_back(thread(Telnet, ips.at(j), username, password, config.COMMANDS, j));
+						threads.push_back(thread(&Telnet::Start, Telnet(), ips.at(j), username, password, config.COMMANDS, j));
 					}
 
 					for (auto& thread : threads)
@@ -101,14 +106,14 @@ int main()
 			}
 			catch (const std::exception& err)
 			{
-				PrintError("Error: ", err);
+				main.printer.PrintError("Error: ", err);
 			}
 		}
 		threads.clear();
 	}
 
-	Print("\n");
-	Print("FINISHED");
-	Print("\n");
+	main.printer.Print("\n");
+	main.printer.Print("FINISHED");
+	main.printer.Print("\n");
 	system("pause");
 }
