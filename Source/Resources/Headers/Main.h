@@ -6,8 +6,6 @@
 #include <typeinfo>
 #include <Windows.h>
 
-
-
 #pragma once
 
 class Main

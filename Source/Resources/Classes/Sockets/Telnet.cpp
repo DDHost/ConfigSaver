@@ -42,19 +42,15 @@ int Telnet::Start(string RemoteHost, string user, string pass, vector<string> co
 		return 0;
 	}
 
-	while (this->sock != INVALID_SOCKET)
+	if (this->Login())
 	{
-		if (this->Login())
-		{
-			this->printer.Print("Successfully logged into '"+ this->TargetIP +"'  \n");
-			break;
-		}
-		else
-		{
-			this->files.LogFailed(TargetIP,num);
-			closesocket(this->sock);
-			return 0;
-		}
+		this->printer.Print("Successfully logged into '" + this->TargetIP + "'  \n");
+	}
+	else
+	{
+		this->files.LogFailed(TargetIP, num);
+		closesocket(this->sock);
+		return 0;
 	}
 
 	int sendResult;
@@ -64,7 +60,7 @@ int Telnet::Start(string RemoteHost, string user, string pass, vector<string> co
 		if (sendResult != -1) {
 			if (this->Commands[i] == "sh run \n")
 			{
-				if (!this->ConfigReciver(false, num)) {
+				if (!this->ConfigReciver(num)) {
 					return 0;
 				}
 				else 
@@ -119,102 +115,96 @@ int Telnet::Login()
 
 void Telnet::Recive(bool print)
 {
-	this->bytesReceived = 0;
-	this->recvDATA = "";
+	int bytesReceived;
+	string recvDATA = "";
 
-	while (sock != INVALID_SOCKET)
+	do
 	{	
-		if (this->bytesReceived = recv(this->sock, this->buffer, sizeof(this->buffer), 0))
+		if (bytesReceived = recv(this->sock, this->buffer, sizeof(this->buffer), 0))
 		{
-			this->recvDATA = string(this->buffer, 0, this->bytesReceived);
+			recvDATA = string(this->buffer, 0, bytesReceived);
 			if (print)
 			{
-				this->printer.Print(this->recvDATA + '\n');
+				this->printer.Print(recvDATA + '\n');
 			}
 			break;
 		}
 
-	}
+	} while (sock != INVALID_SOCKET);
 
 }
 
 int Telnet::ReciveUntil(string parameter, bool print)
 {
-	this->bytesReceived = 0;
-	this->recvDATA = "";
+	int bytesReceived;
+	string recvDATA = "";
 
-	while (this->sock != INVALID_SOCKET)
+	do
 	{
-		this->recvDATA = "";
-		this->bytesReceived = recv(this->sock, this->buffer, sizeof(this->buffer), 0);
-		if (this->bytesReceived)
+		recvDATA = "";
+		bytesReceived = recv(this->sock, this->buffer, sizeof(this->buffer), 0);
+		if (bytesReceived)
 		{
-			this->recvDATA = string(this->buffer, 0, this->bytesReceived);
+			recvDATA = string(this->buffer, 0, bytesReceived);
 			if (print)
 			{
-				this->printer.Print(this->recvDATA + '\n');
+				this->printer.Print(recvDATA + '\n');
 			}
-			if (this->recvDATA.find("% Authentication failed\r\n") != string::npos)
+			if (recvDATA.find("% Authentication failed\r\n") != string::npos)
 			{
 				return 0;
 			}
 
-			if (this->recvDATA.find(parameter) != string::npos)
+			if (recvDATA.find(parameter) != string::npos)
 			{
-				break;
+				return 1;
 			}
 		}
 
-	}
-	return 1;
+	} while (this->sock != INVALID_SOCKET);
+	return 0;
 }
 
-int Telnet::ConfigReciver(bool save, int num)
+int Telnet::ConfigReciver(int num)
 {
-
-	this->bytesReceived = 0;
-	this->recvDATA = "";
+	int bytesReceived;
+	string recvDATA = "";
 	bool startStore = false;
 	
 	this->printer.Print("Retriving configuration form " + this->TargetIP+'\n');
 
-	while (this->sock != INVALID_SOCKET) {
+	do {
 
 		// recive data
-		this->bytesReceived = recv(this->sock, this->buffer, sizeof(this->buffer), 0);
+		bytesReceived = recv(this->sock, this->buffer, sizeof(this->buffer), 0);
 
 		// handle errors
-		if (this->bytesReceived == -1) {
-			save = false;
+		if (bytesReceived == -1) {
 			return 0;
 		}
 
 		// bytes to string as long as the switch does not start to send running config
 		if (!startStore) {
-			this->recvDATA = string(this->buffer, 0, this->bytesReceived);
+			recvDATA = string(this->buffer, 0, bytesReceived);
 		}
 
 		// start the saving actions when switch try to send running config
-		if (this->recvDATA.find("Building configuration...\r\n") != string::npos) {
-			this->recvDATA = "";
+		if (recvDATA.find("Building configuration...") != string::npos) {
+			recvDATA = "";
 			startStore = true;
 		}
 		// start when switch sebd the all running config
 		if (startStore) {
-			// store the running config
-			this->recvDATA += string(this->buffer, 0, bytesReceived);
-			if (save == true) {
-				bytesReceived = 0;
-				this->files.saveToFile(this->recvDATA, this->TargetIP); // store running to file
-				save = false;
-				break;
-			}
-			// when to stop storing and allow saving the running config to file
-			if (this->recvDATA.find("!\r\nend\r\n") != string::npos && this->recvDATA.find("^@") != string::npos) {
-				save = true;
+			// store the running config to string
+			recvDATA += string(this->buffer, 0, bytesReceived);
+
+			// Detect when fully recived config
+			if (recvDATA.find("end\r\n") != string::npos && recvDATA[recvDATA.length()-1] == '#' || recvDATA.find("^@") != string::npos) {
+				this->files.saveToFile(recvDATA, this->TargetIP); // save config to txt file
+				return 1;
 			}
 		}
 
-	}
-	return 1;
+	} while (this->sock != INVALID_SOCKET);
+	return 0;
 }

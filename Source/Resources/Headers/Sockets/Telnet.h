@@ -10,13 +10,14 @@ class Telnet
 {
 private:
 	SOCKET sock;
-	int port = 23, // The port to use for connection Telnet is '23'
-		bytesReceived;
+	int port = 23; // The port to use for connection Telnet is '23'
+
 	Files files;
-	string password, 
-			username,
-			TargetIP,
-			recvDATA;
+
+	string password,
+		username,
+		TargetIP;
+
 	vector<string> Commands;
 	Printers printer;
 	char buffer[4096];
@@ -24,7 +25,7 @@ private:
 	int Login();
 	void Recive(bool print);
 	int ReciveUntil(string para, bool print);
-	int ConfigReciver(bool save, int num);
+	int ConfigReciver(int num);
 public:
 	int Start(string RemoteHost, string user, string pass, vector<string> commands, int num);
 };
