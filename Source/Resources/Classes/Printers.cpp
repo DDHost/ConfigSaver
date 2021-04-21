@@ -3,7 +3,7 @@
 
 void Printers::Print(string msg)
 {
-	cout << msg;
+	cout << msg << endl;
 }
 
 void Printers::Print2Spaces(string str)

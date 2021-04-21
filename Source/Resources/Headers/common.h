@@ -3,10 +3,26 @@
 #include <vector>
 #include <fstream>
 #include <thread>
-#ifndef COMMON_H
-#define COMMON_H 
 #pragma once
 using namespace std;
+
+
+#ifndef COMMON_H
+#define COMMON_H 
+
+
+class MyException : public std::exception {
+    string msg;
+    int id;
+
+public:
+    MyException(string msg_, int id_) : msg(msg_), id(id_) {}
+
+    string get_msg() const { return msg; }
+    int get_id() const { return id; }
+};
+
+
 
 class Printers
 {
