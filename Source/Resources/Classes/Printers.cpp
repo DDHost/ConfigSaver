@@ -8,15 +8,13 @@ void Printers::Print(string msg)
 
 void Printers::Print2Spaces(string str)
 {
-	Print("  " + str);
+	cout << "	" << str;
 }
 
 void Printers::PrintError(string str, exception error)
 {
 	string msg = str + error.what();
-	Print("\n");
 	Print2Spaces(msg);
-	Print("\n");
 }
 
 void Printers::PrintCenteredText(string str, int w)

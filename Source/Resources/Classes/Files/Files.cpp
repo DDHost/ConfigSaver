@@ -86,7 +86,7 @@ void Files::LogFailed(string ip, int num)
 	file_ << ip << endl;
 	file_.close();
 
-	cout << "Failed to connect to " << ip << " logged in the file:" << "log_" + filename + ".txt" << "\n " << endl;
+	//cout << "Failed to connect to " << ip << " logged in the file:" << "log_" + filename + ".txt" << "\n " << endl;
 }
 
 

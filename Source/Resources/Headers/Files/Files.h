@@ -1,15 +1,14 @@
-#ifndef FILES_H
-#define FILES_H
-
 #include "../common.h"
 #include <ctime>
 #include <direct.h>
 #include <sys/stat.h>
 
-#pragma warning(disable : 4996)
 #pragma once
+#pragma warning(disable : 4996)
 
 
+#ifndef FILES_H
+#define FILES_H
 class Files
 {
 public:

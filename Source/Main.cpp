@@ -15,9 +15,8 @@ int main()
 
 	// want to add settings option by mark selecting
 
-	main.printer.Print2Spaces("Enter any key to start: ");
-	cin.get();
-
+	main.printer.Print("Enter any key to start: ");
+	cin.get(); // wait for any user keyboard input
 	string username = config.username, 
 		password = config.password,
 		filename = config.file;

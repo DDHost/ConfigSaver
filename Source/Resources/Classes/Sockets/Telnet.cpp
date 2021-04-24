@@ -1,116 +1,124 @@
 #include "../../Headers/Sockets/Telnet.h"
 #pragma once
 
-int Telnet::Start(string RemoteHost, string user, string pass, vector<string> commands, int num)
+void Telnet::Start(string RemoteHost, string user, string pass, vector<string> commands, int id)
 {
 	this->password = pass;
 	this->username = user;
 	this->Commands = commands;
 	this->TargetIP = RemoteHost;
+	this->ID = id;
 
-	this->printer.Print("Connecting to "+TargetIP + '\n');
+	this->printer.Print("Connecting to " + this->TargetIP + '\n');
 
+	try
+	{
+		this->CreateSocket();
+		this->Login();
+		this->sendCommands();
+	}
+	catch (MyException& exp)
+	{
+		string error = exp.get_msg();
+
+		switch (exp.get_id())
+		{
+		case excRetry: // retry
+			break;
+		case excLog: // log to file
+			this->files.LogFailed(this->TargetIP, this->ID);
+		case excClose:
+		default:
+			this->printer.Print(error + '\n'); // print error
+			closesocket(this->sock);
+			WSACleanup();
+			break;
+		}
+	}
+}
+
+void Telnet::CreateSocket()
+{
+	// Init Winsock
 	WSAData data;
-	WORD ver = MAKEWORD(2, 2);
+	WORD ver = MAKEWORD(2, 2); // winsock version
 	int wsResult = WSAStartup(ver, &data);
 	if (wsResult != 0)
 	{
-		this->printer.Print("Can't start Winsock, Err #" + wsResult + '\n');
-		return 0;
+		throw "Can't start Winsock, Err # ", 1;
 	}
 
+	// Create Socket
 	this->sock = socket(AF_INET, SOCK_STREAM, 0);
+
 	if (this->sock == INVALID_SOCKET)
 	{
-		this->printer.Print("Can't create socket, Err #" + WSAGetLastError() + '\n');
 		WSACleanup();
-		return 0;
+		throw MyException("Failed to create a socket with '" + this->TargetIP + "'", excLog);
 	}
 
-	sockaddr_in hint;
-	hint.sin_family = AF_INET;
-	hint.sin_port = htons(this->port);
-	inet_pton(AF_INET, this->TargetIP.c_str(), &hint.sin_addr);
+	// The remote device socket
+	sockaddr_in listen_addr;
+	listen_addr.sin_family = AF_INET; // address family ipv4
+	listen_addr.sin_port = htons(this->port); // sets the listen port
+	inet_pton(AF_INET, this->TargetIP.c_str(), &listen_addr.sin_addr);
 
-	// init the connection 
-	int connResult = connect(this->sock, (sockaddr*)&hint, sizeof(hint));
+	// Connect to the device
+	int connResult = connect(this->sock, (sockaddr*)&listen_addr, sizeof(listen_addr));
 	if (connResult == SOCKET_ERROR)
 	{
-		this->files.LogFailed(this->TargetIP,num);
 		closesocket(this->sock);
 		WSACleanup();
-		return 0;
+		throw MyException("Failed to establish connection with '" + this->TargetIP + "'", excLog);
 	}
 
-	if (this->Login())
-	{
-		this->printer.Print("Successfully logged into '" + this->TargetIP + "'  \n");
-	}
-	else
-	{
-		this->files.LogFailed(TargetIP, num);
-		closesocket(this->sock);
-		return 0;
-	}
-
-	int sendResult;
-	for (int i = 0; i < this->Commands.size(); i++)
-	{
-		sendResult = send(sock, this->Commands[i].c_str(), this->Commands[i].size() + 1, 0);
-		if (sendResult != -1) {
-			if (this->Commands[i] == "sh run \n")
-			{
-				if (!this->ConfigReciver(num)) {
-					return 0;
-				}
-				else 
-				{
-					break;
-				}
-			}
-		}
-		else
-		{
-			return 0;
-		}
-	}
-
-	closesocket(this->sock);
-	WSACleanup();
-	return 1;
+	this->printer.Print("Connection has been establish with '" + this->TargetIP + "'\n");
 }
 
-int Telnet::Login()
+
+
+void Telnet::Login()
 {
+	int Retry = 0;
 
-	this->Recive(false);
+	do {
+		this->Recive(false);
+		try
+		{
+			this->ReciveUntil("Username: ");
+			send(this->sock, this->username.c_str(), this->username.size() + 1, 0);
 
+			this->ReciveUntil("Password: ");
+			send(this->sock, this->password.c_str(), this->password.size() + 1, 0);
 
-	if (this->ReciveUntil("Username: ", false))
-	{
-		send(this->sock, this->username.c_str(), this->username.size() + 1, 0);
-	}
-	else
-	{
-		return 0;
-	}
+			this->ReciveUntil("#"); // check if successfully logon
+			break;
+		}
+		catch (MyException& exp)
+		{
+			string error = exp.get_msg(); // get the error message
+			string enable = "en";
+			switch (exp.get_id())
+			{
+			case excRetry: // retry
+				this->printer.Print(exp.what() + '\n'); // print error
+				break;
+			case excEnableMode:
+				send(this->sock, enable.c_str(), enable.size() + 1, 0);
+				break;
+			case excLog:
+			default:
+				this->printer.Print(error + '\n'); // print error
+				throw MyException("Failed to login to '" + this->TargetIP, excLog);
+			}
+		}
 
-	if (this->ReciveUntil("Password: ", false))
-	{
-		send(this->sock, this->password.c_str(), this->password.size() + 1, 0);
-	}
-	else
-	{
-		return 0;
-	}
+		Retry++;
 
-	if (this->ReciveUntil("#", false))
-	{
-		// successfully loggedd in
-		return 1;
-	}
+	} while (Retry<2 && this->sock != SOCKET_ERROR);
 
-	return 0;
+	if(Retry < 2)
+		this->printer.Print("Successfully logged into '" + this->TargetIP + "' \n");
 }
 
 void Telnet::Recive(bool print)
@@ -130,11 +138,11 @@ void Telnet::Recive(bool print)
 			break;
 		}
 
-	} while (sock != INVALID_SOCKET);
+	} while (sock != SOCKET_ERROR);
 
 }
 
-int Telnet::ReciveUntil(string parameter, bool print)
+int Telnet::ReciveUntil(string parameter)
 {
 	int bytesReceived;
 	string recvDATA = "";
@@ -146,23 +154,30 @@ int Telnet::ReciveUntil(string parameter, bool print)
 		if (bytesReceived)
 		{
 			recvDATA = string(this->buffer, 0, bytesReceived);
-			if (print)
-			{
-				this->printer.Print(recvDATA + '\n');
-			}
+
 			if (recvDATA.find("% Authentication failed\r\n") != string::npos)
 			{
-				return 0;
+				throw MyException("Authentication failed retring login to '" + TargetIP + "'", excRetry);
+			}
+			
+			if (recvDATA.find('>') != string::npos) 
+			{
+				throw MyException("", excEnableMode);
 			}
 
 			if (recvDATA.find(parameter) != string::npos)
 			{
-				return 1;
+				return 0; // Successfully find
 			}
 		}
+		else
+		{
+			throw MyException("Authentication failed 2 times, aborting from '" + TargetIP + "'", excLog);
+		}
 
-	} while (this->sock != INVALID_SOCKET);
-	return 0;
+	} while (this->sock != SOCKET_ERROR);
+
+	throw MyException("Connection has been lost with '" + TargetIP + "'", excLog);
 }
 
 int Telnet::ConfigReciver(int num)
@@ -180,7 +195,7 @@ int Telnet::ConfigReciver(int num)
 
 		// handle errors
 		if (bytesReceived == -1) {
-			return 0;
+			break;
 		}
 
 		// bytes to string as long as the switch does not start to send running config
@@ -193,18 +208,47 @@ int Telnet::ConfigReciver(int num)
 			recvDATA = "";
 			startStore = true;
 		}
+
 		// start when switch sebd the all running config
 		if (startStore) {
 			// store the running config to string
 			recvDATA += string(this->buffer, 0, bytesReceived);
 
 			// Detect when fully recived config
-			if (recvDATA.find("end\r\n") != string::npos && recvDATA[recvDATA.length()-1] == '#' || recvDATA.find("^@") != string::npos) {
+			if (recvDATA.find("end\r\n") != string::npos && recvDATA[recvDATA.length()-1] == '#') {
 				this->files.saveToFile(recvDATA, this->TargetIP); // save config to txt file
-				return 1;
+				return 0;
 			}
 		}
 
-	} while (this->sock != INVALID_SOCKET);
-	return 0;
+	} while (this->sock != SOCKET_ERROR);
+
+	throw MyException("Connection has been lost with '" + TargetIP + "'", excLog);
+}
+
+
+void Telnet::sendCommands()
+{
+	int sendResult;
+	for (int i = 0; i < this->Commands.size(); i++)
+	{
+		sendResult = send(sock, this->Commands[i].c_str(), this->Commands[i].size() + 1, 0);
+		if (sendResult != -1) {
+			if (this->Commands[i] == "sh run \n")
+			{
+				if (!this->ConfigReciver(this->ID))
+				{
+					break;
+				}
+				else
+				{
+					throw MyException("Authentication failed retring login to '" + TargetIP + "'", excLog);
+				}
+			}
+		}
+		else
+		{
+			throw MyException("Something went wrong closing socket with '" + TargetIP + "'", excLog);
+		}
+	}
 }
